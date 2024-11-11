@@ -196,87 +196,95 @@ export default {
 </script>
 
 <style scoped lang="sass">
-.quadrado 
-  margin: 20px
-  padding: 20px
-  max-width: 1200px
-  width: 100%
-  height: auto
-  background-color: #f0f0f0 // Alterei para um cinza suave
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
-  position: relative
-  
+  .quadrado 
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
+    margin: 20px auto
+    padding: 20px
+    max-width: 1200px
+    width: 100%
+    height: auto
+    background-color: #f0f0f0
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
+    position: relative
+    border-radius: 6px
 
-.titulo
-  color: #2a3d73 // Azul suave
-  font-weight: bold
-  text-align: center
-  font-size: 24px
-  margin-bottom: 20px
+  .titulo
+    color: #2a3d73
+    font-weight: bold
+    text-align: center
+    font-size: 24px
+    margin-bottom: 20px
 
-.container-formulario
-  display: flex
-  flex-direction: column
-  gap: 20px
-  width: 100%
-  padding: 20px
-  box-sizing: border-box
+  .container-formulario
+    display: flex
+    flex-direction: column
+    gap: 20px
+    width: 100%
+    padding: 20px
+    box-sizing: border-box
 
-.linha
-  display: flex
-  gap: 20px
-  justify-content: space-between
-  align-items: center
+  .linha
+    display: flex
+    gap: 20px
+    justify-content: space-between
+    align-items: center
+    flex-wrap: wrap
 
-.item-input
-  flex: 1
+  .item-input
+    flex: 1
+    min-width: 250px
 
-.campo-input, .descri-input
-  width: 100%
-  font-size: 14px
-  border-radius: 4px
-  border: 1px solid #ccc
-  padding: 10px
-  transition: border-color 0.3s ease, box-shadow 0.3s ease
-  background-color: #fafafa // Fundo claro para os campos
-  color: #2a3d73 // Azul suave
+  .campo-input, .descri-input
+    width: 100%
+    font-size: 14px
+    border-radius: 4px
+    border: 1px solid #ccc
+    padding: 10px
+    transition: border-color 0.3s ease, box-shadow 0.3s ease
+    background-color: #fafafa
+    color: #2a3d73
 
-.dias-semana
-  display: flex
-  flex-wrap: wrap
-  gap: 10px
-  justify-content: center
+  .dias-semana
+    display: flex
+    flex-wrap: wrap
+    gap: 10px
+    justify-content: center
 
-.botoes
-  display: flex
-  justify-content: flex-end
-  gap: 10px
-  margin-top: 20px
+  .botoes
+    display: flex
+    justify-content: flex-end
+    gap: 10px
+    margin-top: 20px
 
-.botao-acao-salvar
-  transition: background-color 0.3s ease, transform 0.2s ease
-  &:hover
-    transform: scale(1.05)
-    background-color: #10f448
+  .botao-acao-salvar, .botao-acao-cancelar
+    transition: background-color 0.3s ease, transform 0.2s ease
+    &:hover
+      transform: scale(1.05)
+      background-color: #10f448
 
-.botao-acao-cancelar
-  transition: background-color 0.3s ease, transform 0.2s ease
-  &:hover
-    transform: scale(1.05)
-    background-color: #991418
+  .mensagem-sucesso
+    margin-top: 20px
+    color: green
+    font-weight: bold
+    text-align: center
+    background: rgba(255, 255, 255, 0.9)
+    border-radius: 5px
+    padding: 10px
+    box-shadow: 0 0 10px rgba(0,0,0,0.2)
 
-.mensagem-sucesso
-  margin-top: 20px
-  color: green
-  font-weight: bold
-  text-align: center
-  background: rgba(255, 255, 255, 0.9)
-  border-radius: 5px
-  padding: 10px
-  box-shadow: 0 0 10px rgba(0,0,0,0.2)
+  .campo-label
+    color: #2a3d73
+    font-size: 14px
+    font-weight: 400
 
-.campo-label
-  color: #2a3d73 // Azul suave
-  font-size: 14px
-  font-weight: 400
+  body, html
+    height: 100%
+    margin: 0
+    display: flex
+    justify-content: center
+    align-items: center
+    background-color: #f4f4f4
 </style>
