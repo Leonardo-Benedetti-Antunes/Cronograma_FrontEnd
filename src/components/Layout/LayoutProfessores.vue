@@ -2,14 +2,16 @@
   <v-telaCadastroProfessor>
     <div class="quadrado">
       <h2 class="titulo">Cadastro de Professores</h2>
+
       <div v-if="showSuccessMessage" class="mensagem-sucesso">
         Dados salvos com sucesso!
       </div>
 
       <div class="container-formulario">
-        <div class="grupo-input">
+        <!-- Campo Nome e Matéria, alinhados horizontalmente -->
+        <div class="linha">
           <div class="item-input">
-            <label for="name">Nome:</label>
+            <label for="name" class="campo-label">Nome:</label>
             <v-text-field
               id="name"
               v-model="name"
@@ -21,33 +23,47 @@
               :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
             ></v-text-field>
           </div>
+
           <div class="item-input">
-            <label for="descricao">Descrição:</label>
-            <v-textarea
-              id="descricao"
-              v-model="descricao"
+            <label for="materia" class="campo-label">Selecione a Matéria:</label>
+            <v-select
+              id="materia"
+              v-model="materia"
+              :items="['Nenhum']"
               outlined
               class="campo-input"
-              rows="3"
-              :placeholder="'Digite aqui'"
+              :error-messages="materiaErrorMessages"
+              @blur="validateMateria"
+              :placeholder="'Selecione a matéria'"
               :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
-            ></v-textarea>
+            ></v-select>
           </div>
         </div>
 
-        <label for="materia">Selecione a Matéria:</label>
-        <v-select
-          id="materia"
-          v-model="materia"
-          :items="['Nenhum']"
-          outlined
-          class="campo-input"
-          :error-messages="materiaErrorMessages"
-          :placeholder="'Selecione a matéria'"
-          :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
-        ></v-select>
+        <!-- Campo Descrição -->
+        <div class="item-input">
+          <label for="descricao" class="campo-label">Descrição:</label>
+          <v-textarea
+            id="descricao"
+            v-model="descricao"
+            outlined
+            class="descri-input"
+            rows="3"
+            :placeholder="'Digite aqui'"
+            :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
+          ></v-textarea>
+        </div>
 
-        <label>Selecione os Dias da Semana:</label>
+        <!-- Selecione os Dias da Semana -->
+        <label class="campo-label">Selecione os Dias da Semana:</label>
+        <v-alert
+          v-if="selectedDaysErrorMessage"
+          type="error"
+          class="error-message"
+        >
+          {{ selectedDaysErrorMessage }}
+        </v-alert>
+
         <div class="dias-semana">
           <v-checkbox
             v-for="dia in dias"
@@ -58,29 +74,27 @@
             class="item-checkbox"
             :style="{ backgroundColor: checkboxBgColor, color: checkboxTextColor }"
           ></v-checkbox>
-        
-        <div v-if="selectedDaysErrorMessage" class="error-message">{{ selectedDaysErrorMessage }}</div>
-        
         </div>
-      
-      </div>
-      
-      <div class="botoes">
-        <v-btn @click="confirmCancel" class="botao-acao">Cancelar</v-btn>
-        <v-btn @click="saveData" class="botao-acao">Salvar</v-btn>
-      </div>
 
-      <v-dialog v-model="cancelDialog" max-width="290">
-        <v-card>
-          <v-card-title class="headline">Confirmar Cancelamento</v-card-title>
-          <v-card-text>Tem certeza de que deseja cancelar o cadastro?</v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn color="green" text @click="cancel">Sim</v-btn>
-            <v-btn color="red" text @click="cancelDialog = false">Não</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+        <!-- Botões Cancelar e Salvar -->
+        <div class="botoes">
+          <v-btn @click="confirmCancel" class="botao-acao-cancelar">Cancelar</v-btn>
+          <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
+        </div>
+
+        <!-- Diálogo de Confirmação de Cancelamento -->
+        <v-dialog v-model="cancelDialog" max-width="290">
+          <v-card>
+            <v-card-title class="headline">Confirmar Cancelamento</v-card-title>
+            <v-card-text>Tem certeza de que deseja cancelar o cadastro?</v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn color="green" text @click="cancel">Sim</v-btn>
+              <v-btn color="red" text @click="cancelDialog = false">Não</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </div>
     </div>
   </v-telaCadastroProfessor>
 </template>
@@ -93,7 +107,10 @@ export default {
     const name = ref('')
     const descricao = ref('')
     const materia = ref(null)
-    const dias = ref([{ sigla: 'Seg' }, { sigla: 'Ter' }, { sigla: 'Qua' }, { sigla: 'Qui' }, { sigla: 'Sex' }, {sigla:'Sab'},{sigla:'Dom'}])
+    const dias = ref([
+      { sigla: 'Seg' }, { sigla: 'Ter' }, { sigla: 'Qua' }, 
+      { sigla: 'Qui' }, { sigla: 'Sex' }, { sigla: 'Sab' }, { sigla: 'Dom' }
+    ])
     const selectedDays = ref([])
     const nameErrorMessages = ref([])
     const materiaErrorMessages = ref([])
@@ -101,10 +118,10 @@ export default {
     const showSuccessMessage = ref(false)
     const cancelDialog = ref(false)
 
-    const inputBgColor = ref('#f9f9f9')
-    const inputTextColor = ref('#2b259f')
-    const checkboxBgColor = ref('#e0e0e0')
-    const checkboxTextColor = ref('#2b259f')
+    const inputBgColor = ref('#fafafa') // Fundo dos campos
+    const inputTextColor = ref('#2a3d73') // Texto azul suave
+    const checkboxBgColor = ref('transparent') // Fundo dos checkboxes
+    const checkboxTextColor = ref('#2a3d73') // Texto azul suave nos checkboxes
 
     const validateName = () => {
       nameErrorMessages.value = []
@@ -169,6 +186,7 @@ export default {
       checkboxBgColor,
       checkboxTextColor,
       validateName,
+      validateMateria,
       saveData,
       confirmCancel,
       cancel,
@@ -178,94 +196,87 @@ export default {
 </script>
 
 <style scoped lang="sass">
-.error-message
-  color: red
-  font-size: 12px
-  background-color: rgba(255, 228, 228, 0.8)
-  padding: 5px
-  border-radius: 4px
+.quadrado 
+  margin: 20px
+  padding: 20px
+  max-width: 1200px
+  width: 100%
+  height: auto
+  background-color: #f0f0f0 // Alterei para um cinza suave
+  box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
+  position: relative
+  
+
+.titulo
+  color: #2a3d73 // Azul suave
+  font-weight: bold
+  text-align: center
+  font-size: 24px
+  margin-bottom: 20px
 
 .container-formulario
-  margin: 0 auto
-  padding: 20px
-  max-width: 500px
   display: flex
   flex-direction: column
   gap: 20px
+  width: 100%
+  padding: 20px
+  box-sizing: border-box
 
-.grupo-input
+.linha
   display: flex
   gap: 20px
+  justify-content: space-between
+  align-items: center
 
 .item-input
   flex: 1
 
-label
-  font-size: 14px
-  color: #333
-
-.quadrado 
-  margin: 20px
-  width: calc(100vw - 50px)
-  height: calc(100vh - 90px)
-  box-sizing: border-box
-  background-color: rgba(230, 230, 230, 0.9)
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.3)
-
-.campo-input
+.campo-input, .descri-input
   width: 100%
-  font-size: 12px
+  font-size: 14px
   border-radius: 4px
   border: 1px solid #ccc
-  padding: 8px
+  padding: 10px
   transition: border-color 0.3s ease, box-shadow 0.3s ease
+  background-color: #fafafa // Fundo claro para os campos
+  color: #2a3d73 // Azul suave
 
 .dias-semana
   display: flex
-  gap: 5px
   flex-wrap: wrap
-  position: absolute
-  top: 90%
-  left: 10%
-  transform: translate(50%, -60%)
-  align-self: center
+  gap: 10px
   justify-content: center
-
-
-.item-checkbox
-  transition: transform 0.2s ease
 
 .botoes
   display: flex
   justify-content: flex-end
   gap: 10px
-  position: absolute
-  margin: 20px
-  bottom: 20px 
-  right: 20px  
+  margin-top: 20px
 
-.botao-acao
+.botao-acao-salvar
   transition: background-color 0.3s ease, transform 0.2s ease
-
   &:hover
     transform: scale(1.05)
+    background-color: #10f448
+
+.botao-acao-cancelar
+  transition: background-color 0.3s ease, transform 0.2s ease
+  &:hover
+    transform: scale(1.05)
+    background-color: #991418
 
 .mensagem-sucesso
   margin-top: 20px
   color: green
   font-weight: bold
-  position: absolute
-  top: 20px
-  left: 50%
-  transform: translateX(-50%)
+  text-align: center
   background: rgba(255, 255, 255, 0.9)
   border-radius: 5px
   padding: 10px
   box-shadow: 0 0 10px rgba(0,0,0,0.2)
 
-.titulo
-  color: black
-  font-weight: bold
-  position: absolute
-  margin: 15px 
+.campo-label
+  color: #2a3d73 // Azul suave
+  font-size: 14px
+  font-weight: 400
 </style>
