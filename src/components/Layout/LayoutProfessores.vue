@@ -78,8 +78,8 @@
 
         <!-- Botões Cancelar e Salvar -->
         <div class="botoes">
-          <v-btn @click="confirmCancel" class="botao-acao">Cancelar</v-btn>
-          <v-btn @click="saveData" class="botao-acao">Salvar</v-btn>
+          <v-btn @click="confirmCancel" class="botao-acao-cancelar">Cancelar</v-btn>
+          <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
         </div>
 
         <!-- Diálogo de Confirmação de Cancelamento -->
@@ -205,6 +205,7 @@ export default {
   background-color: #f0f0f0 // Alterei para um cinza suave
   box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
   position: relative
+  
 
 .titulo
   color: #2a3d73 // Azul suave
@@ -252,10 +253,17 @@ export default {
   gap: 10px
   margin-top: 20px
 
-.botao-acao
+.botao-acao-salvar
   transition: background-color 0.3s ease, transform 0.2s ease
   &:hover
     transform: scale(1.05)
+    background-color: #10f448
+
+.botao-acao-cancelar
+  transition: background-color 0.3s ease, transform 0.2s ease
+  &:hover
+    transform: scale(1.05)
+    background-color: #991418
 
 .mensagem-sucesso
   margin-top: 20px

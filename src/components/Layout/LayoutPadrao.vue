@@ -15,6 +15,10 @@
       src="/logobranco.png"
       class="ma-4"
     ></v-img>
+    
+    <v-btn @click="retornaInicio" class="botao_inicio">inicio
+      <router-link to="/professores" style="text-decoration: none; color: white;"></router-link>
+    </v-btn>
 
     <v-spacer></v-spacer>
   </v-toolbar>
@@ -61,4 +65,13 @@
   color: #2a3d73 // Azul suave
   margin-left: 16px
   transition: color 0.3s ease
+
+.botao_inicio
+  font-size: 14px
+  font-weight: bold
+  padding: 10px
+  
+
+
+
 </style>
