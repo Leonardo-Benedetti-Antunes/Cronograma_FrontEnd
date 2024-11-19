@@ -2,7 +2,7 @@
   <v-app class="customColor">
     <v-main>
        <LayoutPadrao/>
-       <LayoutProfessores/>
+       <LayoutMateria/>
     </v-main>
     
   </v-app>
