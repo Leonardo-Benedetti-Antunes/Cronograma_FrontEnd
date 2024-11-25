@@ -1,12 +1,13 @@
-<template>
+ <template>
   <v-telaCadastroProfessor>
-    <div class="quadrado">
-      <h2 class="titulo">Cadastro de Professores</h2>
+    <!-- Contêiner Vuetify para centralizar o conteúdo -->
+    <v-container class="d-flex align-center justify-center fill-height" fluid>
+      <div class="quadrado">
+        <h2 class="titulo">Cadastro de Professores</h2>
 
-      <div v-if="showSuccessMessage" class="mensagem-sucesso">
-        Dados salvos com sucesso!
-      </div>
-
+        <div v-if="showSuccessMessage" class="mensagem-sucesso">
+          Dados salvos com sucesso!
+        </div>
       <div class="container-formulario">
         <!-- Campo Nome e Matéria, alinhados horizontalmente -->
         <div class="linha">
@@ -14,7 +15,8 @@
             <label for="name" class="campo-label">Nome:</label>
             <v-text-field
               id="name"
-              v-model="name"
+              v-model="nome"
+              label="Nome do Professor" 
               outlined
               class="campo-input"
               :error-messages="nameErrorMessages"
@@ -24,36 +26,41 @@
             ></v-text-field>
           </div>
 
+          <!-- Campo Descrição -->
           <div class="item-input">
-            <label for="materia" class="campo-label">Selecione a Matéria:</label>
-            <v-select
-              id="materia"
-              v-model="materia"
-              :items="['Nenhum']"
+            <label for="descricao" class="campo-label">Descrição:</label>
+            <v-textarea
+              id="descricao"
+              v-model="descricao"
               outlined
-              class="campo-input"
-              :error-messages="materiaErrorMessages"
-              @blur="validateMateria"
-              :placeholder="'Selecione a matéria'"
+              class="descri-input"
+              rows="3"
+              :placeholder="'Digite aqui'"
               :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
-            ></v-select>
+            ></v-textarea>
           </div>
-        </div>
 
-        <!-- Campo Descrição -->
-        <div class="item-input">
-          <label for="descricao" class="campo-label">Descrição:</label>
-          <v-textarea
-            id="descricao"
-            v-model="descricao"
-            outlined
-            class="descri-input"
-            rows="3"
-            :placeholder="'Digite aqui'"
-            :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
-          ></v-textarea>
-        </div>
+          <!-- Selecione os Dias da Semana -->
+          <label class="campo-label">Selecione os Dias da Semana:</label>
+          <v-alert
+            v-if="selectedDaysErrorMessage"
+            type="error"
+            class="error-message"
+          >
+            {{ selectedDaysErrorMessage }}
+          </v-alert>
 
+          <div class="dias-semana">
+            <v-checkbox
+              v-for="dia in dias"
+              :key="dia.sigla"
+              :label="dia.sigla"
+              :value="dia.sigla"
+              v-model="selectedDays"
+              class="item-checkbox"
+              :style="{ backgroundColor: checkboxBgColor, color: checkboxTextColor }"
+            ></v-checkbox>
+          </div>
         <!-- Selecione os Dias da Semana -->
         <label class="campo-label">Selecione os Dias da Semana:</label>
         <v-alert
@@ -80,23 +87,10 @@
         <!-- Botões Cancelar e Salvar -->
         <div class="botoes">
           <v-btn @click="confirmCancel" class="botao-acao-cancelar">Cancelar</v-btn>
-          <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
+          <v-btn @click="enviarDados" class="botao-acao-salvar">Salvar</v-btn>
         </div>
-
-        <!-- Diálogo de Confirmação de Cancelamento -->
-        <v-dialog v-model="cancelDialog" max-width="290">
-          <v-card>
-            <v-card-title class="headline">Confirmar Cancelamento</v-card-title>
-            <v-card-text>Tem certeza de que deseja cancelar o cadastro?</v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn color="green" text @click="cancel">Sim</v-btn>
-              <v-btn color="red" text @click="cancelDialog = false">Não</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
       </div>
-    </div>
+    </v-container>
   </v-telaCadastroProfessor>
 </template>
 
@@ -194,29 +188,37 @@ export default {
       cancelDialog.value = false
     }
 
+//aqui
+import axios from 'axios';
+
+export default {
+  data() {
     return {
-      name,
-      descricao,
-      materia,
-      dias,
-      selectedDays,
-      nameErrorMessages,
-      materiaErrorMessages,
-      selectedDaysErrorMessage,
-      showSuccessMessage,
-      cancelDialog,
-      inputBgColor,
-      inputTextColor,
-      checkboxBgColor,
-      checkboxTextColor,
-      validateName,
-      validateMateria,
-      saveData,
-      confirmCancel,
-      cancel,
-    }
+      nome: '',
+      descricao: '',
+    };
   },
-}
+  methods: {
+    async enviarDados() {
+      const payload = {
+        nome: this.nome,
+        descricao: this.descricao,
+      };
+
+      try {
+        const response = await axios.post('http://localhost:8080/professor', payload);
+
+        this.$emit('sucesso', response.data);
+        console.log('Dados enviados com sucesso:', response.data);
+
+        this.nome = '';
+        this.descricao = '';
+      } catch (error) {
+        console.error('Erro ao enviar os dados:', error.response || error);
+      }
+    },
+  },
+};
 </script>
 
 <style scoped lang="sass">
@@ -282,7 +284,6 @@ export default {
     justify-content: flex-end
     gap: 10px
     margin-top: 20px
-
   .botao-acao-salvar
     transition: background-color 0.3s ease, transform 0.2s ease
     &:hover
@@ -315,4 +316,8 @@ export default {
   body, html
     height: 100%
     margin: 0
+    display: flex
+    justify-content: center
+    align-items: center
+    background-color: #f4f4f4
 </style>
