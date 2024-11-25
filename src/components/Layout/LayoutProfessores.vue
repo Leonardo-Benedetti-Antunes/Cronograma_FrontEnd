@@ -14,7 +14,8 @@
             <label for="name" class="campo-label">Nome:</label>
             <v-text-field
               id="name"
-              v-model="name"
+              v-model="nome"
+              label="Nome do Professor" 
               outlined
               class="campo-input"
               :error-messages="nameErrorMessages"
@@ -80,7 +81,7 @@
         <!-- Botões Cancelar e Salvar -->
         <div class="botoes">
           <v-btn @click="confirmCancel" class="botao-acao-cancelar">Cancelar</v-btn>
-          <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
+          <v-btn @click="enviarDados" class="botao-acao-salvar">Salvar</v-btn>
         </div>
 
         <!-- Diálogo de Confirmação de Cancelamento -->
@@ -194,29 +195,37 @@ export default {
       cancelDialog.value = false
     }
 
+//aqui
+import axios from 'axios';
+
+export default {
+  data() {
     return {
-      name,
-      descricao,
-      materia,
-      dias,
-      selectedDays,
-      nameErrorMessages,
-      materiaErrorMessages,
-      selectedDaysErrorMessage,
-      showSuccessMessage,
-      cancelDialog,
-      inputBgColor,
-      inputTextColor,
-      checkboxBgColor,
-      checkboxTextColor,
-      validateName,
-      validateMateria,
-      saveData,
-      confirmCancel,
-      cancel,
-    }
+      nome: '',
+      descricao: '',
+    };
   },
-}
+  methods: {
+    async enviarDados() {
+      const payload = {
+        nome: this.nome,
+        descricao: this.descricao,
+      };
+
+      try {
+        const response = await axios.post('http://localhost:8080/professor', payload);
+
+        this.$emit('sucesso', response.data);
+        console.log('Dados enviados com sucesso:', response.data);
+
+        this.nome = '';
+        this.descricao = '';
+      } catch (error) {
+        console.error('Erro ao enviar os dados:', error.response || error);
+      }
+    },
+  },
+};
 </script>
 
 <style scoped lang="sass">
@@ -282,7 +291,6 @@ export default {
     justify-content: flex-end
     gap: 10px
     margin-top: 20px
-
   .botao-acao-salvar
     transition: background-color 0.3s ease, transform 0.2s ease
     &:hover
@@ -315,4 +323,8 @@ export default {
   body, html
     height: 100%
     margin: 0
+    display: flex
+    justify-content: center
+    align-items: center
+    background-color: #f4f4f4
 </style>
