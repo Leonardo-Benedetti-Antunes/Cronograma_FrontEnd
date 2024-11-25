@@ -57,7 +57,7 @@
         <!-- Selecione os Dias da Semana -->
         <label class="campo-label">Selecione os Dias da Semana:</label>
         <v-alert
-          v-if="selectedDaysErrorMessage"
+          v-if="selectedDaysErrorMessage.length > 0"
           type="error"
           class="error-message"
         >
@@ -72,6 +72,7 @@
             :value="dia.sigla"
             v-model="selectedDays"
             class="item-checkbox"
+            @change="validateSelectedDays"
             :style="{ backgroundColor: checkboxBgColor, color: checkboxTextColor }"
           ></v-checkbox>
         </div>
@@ -101,6 +102,7 @@
 
 <script>
 import { ref } from 'vue'
+import { postProfessor } from '@/services/professorService'
 
 export default {
   setup() {
@@ -108,8 +110,13 @@ export default {
     const descricao = ref('')
     const materia = ref(null)
     const dias = ref([
-      { sigla: 'Seg' }, { sigla: 'Ter' }, { sigla: 'Qua' }, 
-      { sigla: 'Qui' }, { sigla: 'Sex' }, { sigla: 'Sab' }, { sigla: 'Dom' }
+      { sigla: 'Dom', id: 1 },  // Domingo = id 1
+      { sigla: 'Seg', id: 2 },  // Segunda-feira = id 2
+      { sigla: 'Ter', id: 3 },  // Terça-feira = id 3
+      { sigla: 'Qua', id: 4 },  // Quarta-feira = id 4
+      { sigla: 'Qui', id: 5 },  // Quinta-feira = id 5
+      { sigla: 'Sex', id: 6 },  // Sexta-feira = id 6
+      { sigla: 'Sab', id: 7 },  // Sábado = id 7
     ])
     const selectedDays = ref([])
     const nameErrorMessages = ref([])
@@ -144,7 +151,7 @@ export default {
       }
     }
 
-    const saveData = () => {
+    const saveData = async () => {
       validateName()
       validateMateria()
       validateSelectedDays()
@@ -153,13 +160,30 @@ export default {
         return
       }
 
-      const data = { name: name.value, descricao: descricao.value, materia: materia.value, dias: selectedDays.value }
-      console.log("Dados para salvar:", data)
-      showSuccessMessage.value = true
-      setTimeout(() => {
-        showSuccessMessage.value = false;
-      }, 3000);
-    }
+      const data = { 
+        name: name.value, 
+        descricao: descricao.value, 
+        materia: materia.value, 
+        dias: selectedDays.value 
+      };
+
+          try {
+        // Enviar os dados para o backend
+        const response = await postProfessor(data);
+        
+        // Se a resposta for bem-sucedida, mostrar uma mensagem de sucesso
+        console.log('Dados salvos com sucesso:', response);
+        showSuccessMessage.value = true;
+
+        // Esconder a mensagem de sucesso após 3 segundos
+        setTimeout(() => {
+          showSuccessMessage.value = false;
+        }, 3000);
+        
+      } catch (error) {
+        console.error('Erro ao salvar dados:', error);
+      }
+    };
 
     const confirmCancel = () => {
       cancelDialog.value = true
@@ -196,87 +220,99 @@ export default {
 </script>
 
 <style scoped lang="sass">
-.quadrado 
-  margin: 20px
-  padding: 20px
-  max-width: 1200px
-  width: 100%
-  height: auto
-  background-color: #f0f0f0 // Alterei para um cinza suave
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
-  position: relative
-  
+  .quadrado 
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
+    margin: 20px auto
+    padding: 20px
+    max-width: 1200px
+    width: 100%
+    height: auto
+    background-color: #f0f0f0
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
+    position: relative
+    border-radius: 6px
 
-.titulo
-  color: #2a3d73 // Azul suave
-  font-weight: bold
-  text-align: center
-  font-size: 24px
-  margin-bottom: 20px
+  .titulo
+    color: #2a3d73
+    font-weight: bold
+    text-align: center
+    font-size: 24px
+    margin-bottom: 20px
 
-.container-formulario
-  display: flex
-  flex-direction: column
-  gap: 20px
-  width: 100%
-  padding: 20px
-  box-sizing: border-box
+  .container-formulario
+    display: flex
+    flex-direction: column
+    gap: 20px
+    width: 100%
+    padding: 20px
+    box-sizing: border-box
 
-.linha
-  display: flex
-  gap: 20px
-  justify-content: space-between
-  align-items: center
+  .linha
+    display: flex
+    gap: 20px
+    justify-content: space-between
+    align-items: center
+    flex-wrap: wrap
 
-.item-input
-  flex: 1
+  .item-input
+    flex: 1
+    min-width: 250px
 
-.campo-input, .descri-input
-  width: 100%
-  font-size: 14px
-  border-radius: 4px
-  border: 1px solid #ccc
-  padding: 10px
-  transition: border-color 0.3s ease, box-shadow 0.3s ease
-  background-color: #fafafa // Fundo claro para os campos
-  color: #2a3d73 // Azul suave
+  .campo-input, .descri-input
+    width: 100%
+    font-size: 14px
+    border-radius: 4px
+    border: 1px solid #ccc
+    padding: 10px
+    transition: border-color 0.3s ease, box-shadow 0.3s ease
+    background-color: #fafafa
+    color: #2a3d73
 
-.dias-semana
-  display: flex
-  flex-wrap: wrap
-  gap: 10px
-  justify-content: center
+  .dias-semana
+    display: flex
+    flex-wrap: wrap
+    gap: 10px
+    justify-content: center
 
-.botoes
-  display: flex
-  justify-content: flex-end
-  gap: 10px
-  margin-top: 20px
+  .botoes
+    display: flex
+    justify-content: flex-end
+    gap: 10px
+    margin-top: 20px
 
-.botao-acao-salvar
-  transition: background-color 0.3s ease, transform 0.2s ease
-  &:hover
-    transform: scale(1.05)
-    background-color: #10f448
+  .botao-acao-salvar
+    transition: background-color 0.3s ease, transform 0.2s ease
+    &:hover
+      transform: scale(1.05)
+      background-color: #10f448
+      text-shadow: 0px 1px 5px rgba(255,255,255,1 )
 
-.botao-acao-cancelar
-  transition: background-color 0.3s ease, transform 0.2s ease
-  &:hover
-    transform: scale(1.05)
-    background-color: #991418
+  .botao-acao-cancelar
+    transition: background-color 0.3s ease, transform 0.2s ease
+    &:hover
+      transform: scale(1.05)
+      background-color: #991418
+      text-shadow: 0px 1px 5px rgba(255,255,255,1 )
 
-.mensagem-sucesso
-  margin-top: 20px
-  color: green
-  font-weight: bold
-  text-align: center
-  background: rgba(255, 255, 255, 0.9)
-  border-radius: 5px
-  padding: 10px
-  box-shadow: 0 0 10px rgba(0,0,0,0.2)
+  .mensagem-sucesso
+    margin-top: 20px
+    color: green
+    font-weight: bold
+    text-align: center
+    background: rgba(255, 255, 255, 0.9)
+    border-radius: 5px
+    padding: 10px
+    box-shadow: 0 0 10px rgba(0,0,0,0.2)
 
-.campo-label
-  color: #2a3d73 // Azul suave
-  font-size: 14px
-  font-weight: 400
+  .campo-label
+    color: #2a3d73
+    font-size: 14px
+    font-weight: 400
+
+  body, html
+    height: 100%
+    margin: 0
 </style>

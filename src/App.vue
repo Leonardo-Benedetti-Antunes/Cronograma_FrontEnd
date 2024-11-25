@@ -2,7 +2,7 @@
   <v-app class="customColor">
     <v-main>
        <LayoutPadrao/>
-       <LayoutProfessores/>
+       <router-view/>
     </v-main>
     
   </v-app>

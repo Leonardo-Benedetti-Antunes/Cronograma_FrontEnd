@@ -15,10 +15,17 @@
       src="/logobranco.png"
       class="ma-4"
     ></v-img>
-    
-    <v-btn @click="retornaInicio" class="botao_inicio">inicio
-      <router-link to="/professores" style="text-decoration: none; color: white;"></router-link>
+    <router-link to="/" class="router-link">
+        <v-btn @click="retornaInicio" class="botao_inicio">
+          inicio
     </v-btn>
+      </router-link>
+
+    <router-link to="/professores" class="router-link">
+      <v-btn @click="retornaInicio" class="botao_inicio">
+          professores
+      </v-btn>
+    </router-link>
 
     <v-spacer></v-spacer>
   </v-toolbar>
@@ -70,8 +77,17 @@
   font-size: 14px
   font-weight: bold
   padding: 10px
+  background-color: #2a3d73
+  box-shadow: 0px 0px 5px rgba(20,30 ,70 ,0.3 )
   
+.botao_inicio:hover
+  transform: scale(1.05)
+  background-color: #2f3ff0
+  text-shadow: 0px 1px 5px rgba(255,255,255,1 )
 
-
+.router-link
+  text-decoration: none
+  color: white
+  
 
 </style>
