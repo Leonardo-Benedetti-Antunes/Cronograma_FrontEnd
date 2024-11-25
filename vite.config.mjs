@@ -14,7 +14,6 @@ export default defineConfig({
     Vue({
       template: { transformAssetUrls }
     }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify(),
     Components(),
     ViteFonts({
@@ -43,5 +42,14 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // proxy: {
+    //   '/professor': {
+    //     target: 'http://localhost:8080',  // Certifique-se de que o backend está rodando nesta porta
+    //     changeOrigin: true,
+    //   },
+    // },
+    historyApiFallback: {
+      index: '/index.html',  // Redireciona as rotas para o index.html
+    },
   },
 })
