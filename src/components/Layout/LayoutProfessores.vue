@@ -14,7 +14,8 @@
             <label for="name" class="campo-label">Nome:</label>
             <v-text-field
               id="name"
-              v-model="name"
+              v-model="nome"
+              label="Nome do Professor" 
               outlined
               class="campo-input"
               :error-messages="nameErrorMessages"
@@ -56,11 +57,7 @@
 
         <!-- Selecione os Dias da Semana -->
         <label class="campo-label">Selecione os Dias da Semana:</label>
-        <v-alert
-          v-if="selectedDaysErrorMessage"
-          type="error"
-          class="error-message"
-        >
+        <v-alert v-if="selectedDaysErrorMessage" type="error" class="error-message">
           {{ selectedDaysErrorMessage }}
         </v-alert>
 
@@ -79,7 +76,7 @@
         <!-- Botões Cancelar e Salvar -->
         <div class="botoes">
           <v-btn @click="confirmCancel" class="botao-acao-cancelar">Cancelar</v-btn>
-          <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
+          <v-btn @click="enviarDados" class="botao-acao-salvar">Salvar</v-btn>
         </div>
 
         <!-- Diálogo de Confirmação de Cancelamento -->
@@ -100,99 +97,36 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import axios from 'axios';
 
 export default {
-  setup() {
-    const name = ref('')
-    const descricao = ref('')
-    const materia = ref(null)
-    const dias = ref([
-      { sigla: 'Seg' }, { sigla: 'Ter' }, { sigla: 'Qua' }, 
-      { sigla: 'Qui' }, { sigla: 'Sex' }, { sigla: 'Sab' }, { sigla: 'Dom' }
-    ])
-    const selectedDays = ref([])
-    const nameErrorMessages = ref([])
-    const materiaErrorMessages = ref([])
-    const selectedDaysErrorMessage = ref('')
-    const showSuccessMessage = ref(false)
-    const cancelDialog = ref(false)
-
-    const inputBgColor = ref('#fafafa') // Fundo dos campos
-    const inputTextColor = ref('#2a3d73') // Texto azul suave
-    const checkboxBgColor = ref('transparent') // Fundo dos checkboxes
-    const checkboxTextColor = ref('#2a3d73') // Texto azul suave nos checkboxes
-
-    const validateName = () => {
-      nameErrorMessages.value = []
-      if (!name.value) {
-        nameErrorMessages.value.push('O nome é obrigatório.')
-      }
-    }
-
-    const validateMateria = () => {
-      materiaErrorMessages.value = []
-      if (!materia.value) {
-        materiaErrorMessages.value.push('A matéria é obrigatória.')
-      }
-    }
-
-    const validateSelectedDays = () => {
-      selectedDaysErrorMessage.value = ''
-      if (selectedDays.value.length === 0) {
-        selectedDaysErrorMessage.value = 'Pelo menos um dia deve ser selecionado.'
-      }
-    }
-
-    const saveData = () => {
-      validateName()
-      validateMateria()
-      validateSelectedDays()
-
-      if (!name.value || !materia.value || selectedDays.value.length === 0) {
-        return
-      }
-
-      const data = { name: name.value, descricao: descricao.value, materia: materia.value, dias: selectedDays.value }
-      console.log("Dados para salvar:", data)
-      showSuccessMessage.value = true
-      setTimeout(() => {
-        showSuccessMessage.value = false;
-      }, 3000);
-    }
-
-    const confirmCancel = () => {
-      cancelDialog.value = true
-    }
-
-    const cancel = () => {
-      console.log("Ação cancelada")
-      cancelDialog.value = false
-    }
-
+  data() {
     return {
-      name,
-      descricao,
-      materia,
-      dias,
-      selectedDays,
-      nameErrorMessages,
-      materiaErrorMessages,
-      selectedDaysErrorMessage,
-      showSuccessMessage,
-      cancelDialog,
-      inputBgColor,
-      inputTextColor,
-      checkboxBgColor,
-      checkboxTextColor,
-      validateName,
-      validateMateria,
-      saveData,
-      confirmCancel,
-      cancel,
-    }
+      nome: '',
+      descricao: '',
+    };
   },
-}
+  methods: {
+    async enviarDados() {
+      const payload = {
+        nome: this.nome,
+        descricao: this.descricao,
+      };
+
+      try {
+        const response = await axios.post('http://localhost:8080/professor', payload);
+
+        this.$emit('sucesso', response.data);
+        console.log('Dados enviados com sucesso:', response.data);
+
+        this.nome = '';
+        this.descricao = '';
+      } catch (error) {
+        console.error('Erro ao enviar os dados:', error.response || error);
+      }
+    },
+  },
+};
 </script>
 
 <style scoped lang="sass">
