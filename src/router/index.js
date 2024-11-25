@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LayoutInicio from '@/components/Layout/LayoutInicio.vue'
 import LayoutProfessores from '@/components/Layout/LayoutProfessores.vue'
+import LayoutMateria from '@/components/Layout/LayoutMateria.vue'
 
 const routes = [
   {
@@ -12,6 +13,11 @@ const routes = [
     path: '/professores',  // A rota para "Cadastro Professor"
     name: 'Cadastro Professor',
     component: LayoutProfessores
+  },
+  {
+    path: '/materia',
+    name: 'Cadastro Materia',
+    component: LayoutMateria
   },
 
   ]
