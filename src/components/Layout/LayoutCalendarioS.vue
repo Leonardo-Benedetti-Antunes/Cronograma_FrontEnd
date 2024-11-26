@@ -1,6 +1,8 @@
 <template>
   <div class="quadrado">
     <h2 class="titulo">Calendario</h2>
+
+    
     <!-- Contêiner para os dias da semana -->
     <div class="dias-semana">
       <div v-for="(dia, index) in ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']" :key="index" class="dia-coluna">
@@ -9,13 +11,18 @@
           {{ dia }}
         </v-btn>
       </div>
+      <router-link to="/calendario-Visualizacao" class="router-link ">
+        <v-btn @click="visualizar" class="botao-vizualizar">
+          visualizar cronograma
+    </v-btn>
+      </router-link>
     </div>
 
     <!-- Exibição da tabela de professores -->
     <div class="tabela-professores">
       <div v-if="selectedDia" class="conteudo-tabela">
         <div class="titulo-tabela">
-          <h3>Professores de {{ selectedDia }}</h3>
+          <h3 class="h3Titulo">Professores de {{ selectedDia }}</h3>
           <!-- Botão para adicionar professor -->
           <v-btn @click="abrirModal(selectedDia)" class="botao-add-professor">
             Adicionar Professor
@@ -166,6 +173,7 @@ const cancelar = () => {
   transform: scale(1.05)
   color: #fafafa
   background-color: #2a3d73 // Efeito de hover suave em cinza
+  text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
 
 .tabela-professores
   width: 100%
@@ -195,6 +203,7 @@ const cancelar = () => {
 .botao-add-professor:hover
   transform: scale(1.05)
   background-color: #0e1e3c // Tom mais escuro de azul para hover
+  text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
 
 .lista-professores-selecionados
   width: 100%
@@ -237,12 +246,14 @@ const cancelar = () => {
   &:hover
     transform: scale(1.05)
     background-color: #10f448
+    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
 
 .botao-cancelar
   transition: background-color 0.3s ease, transform 0.2s ease
   &:hover
     transform: scale(1.05)
     background-color: #991418
+    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
 
 
 .modal-overlay
@@ -286,6 +297,7 @@ input[type="checkbox"]
   &:hover
     transform: scale(1.05)
     background-color: #10f448
+    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
 
 .titulo
   color: #2a3d73
@@ -294,5 +306,21 @@ input[type="checkbox"]
   font-size: 24px
   margin-bottom: 20px
     
+.h3Titulo
+  color: #2a3d73
+
+.botao-vizualizar
+  margin-left: 20px
+  padding: 10px 20px
+  background-color: #1e2e4c // Azul suave para o botão
+  color: white
+  border: none
+  border-radius: 5px
+  cursor: pointer
+  &:hover
+    transform: scale(1.05)
+    color: white
+    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
+    background-color: #1a9afa
 </style>
 

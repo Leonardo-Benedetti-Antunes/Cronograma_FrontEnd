@@ -28,8 +28,9 @@
             <label for="materia" class="campo-label">Selecione a Matéria:</label>
             <v-select
               id="materia"
+              multiple
               v-model="materia"
-              :items="['Nenhum']"
+              :items="['Nenhum','1']"
               outlined
               class="campo-input"
               :error-messages="materiaErrorMessages"

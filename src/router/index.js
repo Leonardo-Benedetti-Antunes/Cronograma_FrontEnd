@@ -4,6 +4,8 @@ import LayoutProfessores from '@/components/Layout/LayoutProfessores.vue'
 import LayoutMateria1 from '@/components/Layout/LayoutMateria1.vue'
 import LayoutSalas from '@/components/Layout/LayoutSalas.vue'
 import LayoutCalendarioS from '@/components/Layout/LayoutCalendarioS.vue'
+import LayoutVisualizacao from '@/components/Layout/LayoutVisualizacao.vue'
+
 
 const routes = [
   {
@@ -28,8 +30,13 @@ const routes = [
   },
   {
     path: '/calendario',
-    name: 'Visualização Calendario',
+    name: 'Calendario',
     component: LayoutCalendarioS
+  },
+  {
+    path: '/calendario-Visualizacao',
+    name: 'Visualização Calendario',
+    component: LayoutVisualizacao
   },
 
   ]
