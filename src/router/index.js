@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LayoutInicio from '@/components/Layout/LayoutInicio.vue'
 import LayoutProfessores from '@/components/Layout/LayoutProfessores.vue'
-import LayoutMateria from '@/components/Layout/LayoutMateria.vue'
+import LayoutMateria1 from '@/components/Layout/LayoutMateria1.vue'
 
 const routes = [
   {
@@ -17,7 +17,7 @@ const routes = [
   {
     path: '/materia',
     name: 'Cadastro Materia',
-    component: LayoutMateria
+    component: LayoutMateria1
   },
 
   ]

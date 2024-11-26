@@ -27,6 +27,12 @@
       </v-btn>
     </router-link>
 
+    <router-link to="/materia" class="router-link">
+      <v-btn @click="retornaInicio" class="botao_inicio">
+          materia
+      </v-btn>
+    </router-link>
+
     <v-spacer></v-spacer>
   </v-toolbar>
 </template>
