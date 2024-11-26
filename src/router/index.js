@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LayoutInicio from '@/components/Layout/LayoutInicio.vue'
 import LayoutProfessores from '@/components/Layout/LayoutProfessores.vue'
 import LayoutMateria1 from '@/components/Layout/LayoutMateria1.vue'
+import LayoutSalas from '@/components/Layout/LayoutSalas.vue'
+import LayoutCalendarioS from '@/components/Layout/LayoutCalendarioS.vue'
 
 const routes = [
   {
@@ -10,7 +12,7 @@ const routes = [
     component: LayoutInicio
   },
   {
-    path: '/professores',  // A rota para "Cadastro Professor"
+    path: '/professores',
     name: 'Cadastro Professor',
     component: LayoutProfessores
   },
@@ -18,6 +20,16 @@ const routes = [
     path: '/materia',
     name: 'Cadastro Materia',
     component: LayoutMateria1
+  },
+  {
+    path: '/salas',
+    name: 'Cadastro Salas',
+    component: LayoutSalas
+  },
+  {
+    path: '/calendario',
+    name: 'Visualização Calendario',
+    component: LayoutCalendarioS
   },
 
   ]

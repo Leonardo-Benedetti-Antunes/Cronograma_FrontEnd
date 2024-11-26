@@ -1,43 +1,58 @@
 <template>
   <div class="quadrado">
-    <!-- Mantendo as colunas separadas por dia -->
-    <div v-for="(dia, index) in ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']" :key="index" :class="'colun' + dia.slice(0, 3)">
-      <!-- Botão mesclado com o topo -->
-      <button @click="abrirModal(dia)" class="botao-selecionar">
-        Selecionar Professores
-      </button>
-
-      <!-- Exibição dos professores selecionados -->
-      <div class="lista-professores-selecionados">
-        <div v-for="(professor, idx) in selectedProfessores[dia]" :key="idx" class="professor-item">
-          <span>{{ professor }}</span>
-          <button class="remover-professor" @click="removerProfessor(dia, idx)">
-            🗑️
-          </button>
-        </div>
+    <h2 class="titulo">Calendario</h2>
+    <!-- Contêiner para os dias da semana -->
+    <div class="dias-semana">
+      <div v-for="(dia, index) in ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']" :key="index" class="dia-coluna">
+        <!-- Botões para selecionar o dia -->
+        <v-btn @click="abrirTabela(dia)" class="botao-dia">
+          {{ dia }}
+        </v-btn>
       </div>
-
-      <!-- Nome do dia abaixo -->
-      <div class="nome-dia-abaixo">{{ dia }}</div>
     </div>
 
-    <div v-if="modalAberto" class="modal-overlay">
-      <div class="modal">
-        <h2>Selecione os Professores para {{ diaSelecionado }}</h2>
-        <div class="lista-professores-checkbox">
-          <div class="coluna-professores" v-for="(coluna, colIndex) in colunasProfessores" :key="colIndex">
-            <div v-for="(professor, idx) in coluna" :key="idx">
-              <input
-                type="checkbox"
-                :id="professor.nome + diaSelecionado"
-                :value="professor.nome"
-                v-model="selectedProfessores[diaSelecionado]"
-              />
-              <label :for="professor.nome + diaSelecionado">{{ professor.nome }}</label>
-            </div>
+    <!-- Exibição da tabela de professores -->
+    <div class="tabela-professores">
+      <div v-if="selectedDia" class="conteudo-tabela">
+        <div class="titulo-tabela">
+          <h3>Professores de {{ selectedDia }}</h3>
+          <!-- Botão para adicionar professor -->
+          <v-btn @click="abrirModal(selectedDia)" class="botao-add-professor">
+            Adicionar Professor
+          </v-btn>
+        </div>
+        
+        <div class="lista-professores-selecionados">
+          <div v-for="(professor, idx) in selectedProfessores[selectedDia]" :key="idx" class="professor-item">
+            <span>{{ professor }}</span>
+            <v-btn class="remover-professor" @click="removerProfessor(selectedDia, idx)">remover</v-btn>
           </div>
         </div>
-        <button class="fechar-modal" @click="fecharModal">Salvar e Fechar</button>
+        <!-- Botões de salvar e cancelar -->
+        <div class="acoes-tabela">
+          
+          <v-btn @click="cancelar" class="botao-cancelar">Cancelar</v-btn>
+          <v-btn @click="salvar" class="botao-salvar">Salvar</v-btn>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de seleção de professores -->
+    <div v-if="modalAberto" class="modal-overlay">
+      <div class="modal">
+        <h2>Selecione os Professores para {{ selectedDia }}</h2>
+        <div class="lista-professores-checkbox">
+          <div v-for="(professor, idx) in professoresDisponiveis" :key="idx">
+            <input
+              type="checkbox"
+              :id="professor.nome + selectedDia"
+              :value="professor.nome"
+              v-model="selectedProfessores[selectedDia]"
+            />
+            <label :for="professor.nome + selectedDia">{{ professor.nome }}</label>
+          </div>
+        </div>
+        <v-btn class="fechar-modal" @click="fecharModal">Salvar e Fechar</v-btn>
       </div>
     </div>
   </div>
@@ -79,11 +94,17 @@ const selectedProfessores = ref({
 
 // Controla a exibição do modal de seleção de professores
 const modalAberto = ref(false)
-const diaSelecionado = ref('')
+const selectedDia = ref('Segunda') // Definir "Segunda" como o primeiro dia da semana ao carregar
+const professoresDisponiveis = computed(() => filtrarProfessoresPorDia(selectedDia.value))
 
-// Função para abrir o modal e definir o dia
+// Função para abrir a tabela de um dia específico
+const abrirTabela = (dia) => {
+  selectedDia.value = dia
+}
+
+// Função para abrir o modal de seleção de professores
 const abrirModal = (dia) => {
-  diaSelecionado.value = dia
+  selectedDia.value = dia
   modalAberto.value = true
 }
 
@@ -97,131 +118,146 @@ const removerProfessor = (dia, index) => {
   selectedProfessores.value[dia].splice(index, 1)
 }
 
-// Função para organizar os professores em colunas
-const colunasProfessores = computed(() => {
-  const professoresDia = filtrarProfessoresPorDia(diaSelecionado.value)
-  const numeroColunas = 2
-  const colunas = []
-  const tamanhoColuna = Math.ceil(professoresDia.length / numeroColunas)
+// Função para salvar as seleções
+const salvar = () => {
+  console.log('Professores salvos:', selectedProfessores.value)
+}
 
-  for (let i = 0; i < numeroColunas; i++) {
-    colunas.push(professoresDia.slice(i * tamanhoColuna, (i + 1) * tamanhoColuna))
-  }
-  return colunas
-})
+// Função para cancelar a seleção
+const cancelar = () => {
+  selectedProfessores.value[selectedDia.value] = []
+}
 </script>
 
 <style scoped lang="sass">
-.quadrado
-  display: flex
-  justify-content: space-around
-  flex-wrap: wrap
-  align-items: flex-start
-  margin: 20px auto
-  padding: 20px
-  max-width: 1300px 
-  width: 100%
-  background-color: #f0f0f0
-  border-radius: 6px
-  gap: 20px  
-
-.colunSeg, .colunTer, .colunQua, .colunQui, .colunSex
+.quadrado 
   display: flex
   flex-direction: column
-  justify-content: flex-start
+  justify-content: center
   align-items: center
-  width: 700px  
-  background-color: #fff
+  margin: 20px auto
+  padding: 20px
+  max-width: 1200px
+  width: 100%
+  height: auto
+  background-color: #f0f0f0
+  box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
+  position: relative
+  border-radius: 6px
+
+.dias-semana
+  display: flex
+  justify-content: space-between
+  margin-bottom: 20px
+
+.dia-coluna
+  width: 100px
+  text-align: center
+
+.botao-dia
+  padding: 10px 15px
+  background-color: #d1d1d1 // Cinza suave
+  color: #2a3d73 // Texto azul suave
+  border: none
+  border-radius: 5px
+  cursor: pointer
+
+.botao-dia:hover
+  transform: scale(1.05)
+  color: #fafafa
+  background-color: #2a3d73 // Efeito de hover suave em cinza
+
+.tabela-professores
+  width: 100%
+  background-color: #fafafa // Fundo claro para a tabela
   border-radius: 8px
-  padding: 15px
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1)
+  padding: 20px
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
 
-  .botao-selecionar
-    margin-bottom: 10px 
-    background-color: #007bff
-    color: white
-    border: none
-    border-radius: 4px
-    padding: 8px 15px
-    cursor: pointer
+.conteudo-tabela
+  display: flex
+  flex-direction: column
+  align-items: flex-start
 
-    &:hover
-      background-color: #0056b3
+.titulo-tabela
+  display: flex
+  justify-content: space-between
+  width: 100%
 
-  .lista-professores-selecionados
-    width: 100%
-    height: 180px
-    overflow-y: auto
-    margin-bottom: 10px
+.botao-add-professor
+  padding: 10px 20px
+  background-color: #1e2e4c // Azul suave para o botão
+  color: white
+  border: none
+  border-radius: 5px
+  cursor: pointer
 
-    .professor-item
-      display: flex
-      justify-content: space-between
-      background-color: #f8f9fa
-      padding: 10px
-      border-radius: 4px
-      margin-bottom: 5px
+.botao-add-professor:hover
+  transform: scale(1.05)
+  background-color: #0e1e3c // Tom mais escuro de azul para hover
 
-  .nome-dia-abaixo
-    color: black
-    font-weight: bold
-    margin-top: 10px 
+.lista-professores-selecionados
+  width: 100%
+  margin-top: 20px
+  height: 380px
+  overflow-y: auto
+  border: 1px solid transparentize(#2a3d73, 0.8)
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1)
 
-  button
-    padding: 5px 10px
-    background-color: #e0e0e0
-    color: black
-    border: none
-    border-radius: 2px
-    cursor: pointer
+.professor-item
+  color: black
+  display: flex
+  justify-content: space-between
+  align-items: center
+  padding: 10px
+  background-color: #fafafa // Fundo claro para cada item
+  border-radius: 4px
+  margin-bottom: 5px
+  border: 1px solid #ddd
 
-    &:hover
-      background-color: #d0d0d0
+.remover-professor
+  background: none
+  border: none
+  color: #991418 // Vermelho para o botão de remover
+  font-size: 16px
+  cursor: pointer
 
-  .lista-professores-selecionados
-    width: 100%
-    padding-top: 5px
-    height: 180px
-    overflow-y: auto
+.remover-professor:hover
+  color: darkred
 
-    .professor-item
-      color: black
-      display: flex
-      justify-content: space-between
-      align-items: center
-      padding: 5px
-      margin-bottom: 5px
-      background-color: #f8f9fa
-      border: 1px solid #ddd
-      border-radius: 4px
-      text-align: center
+.acoes-tabela
+  margin-top: 20px
+  display: flex
+  justify-content: flex-end
+  gap: 10px
+  width: 100%
 
-      span
-        flex: 1
+.botao-salvar
+  transition: background-color 0.3s ease, transform 0.2s ease
+  &:hover
+    transform: scale(1.05)
+    background-color: #10f448
 
-      .remover-professor
-        background: none
-        border: none
-        color: red
-        font-size: 16px
-        cursor: pointer
+.botao-cancelar
+  transition: background-color 0.3s ease, transform 0.2s ease
+  &:hover
+    transform: scale(1.05)
+    background-color: #991418
 
-        &:hover
-          color: darkred
 
-/* Estilos para o modal */
 .modal-overlay
   position: fixed
   top: 0
   left: 0
   width: 100vw
   height: 100vh
-  background-color: rgba(0, 20, 70, 0.5)
+  background-color: rgba(0, 0, 0, 0.5)
   display: flex
   justify-content: center
   align-items: center
 
 .modal
+  color: #2a3d73
   background-color: #fff
   padding: 25px
   max-width: 80vw
@@ -233,27 +269,30 @@ const colunasProfessores = computed(() => {
   align-items: center
 
 .lista-professores-checkbox
-  color: black
-  display: flex
-  gap: 50px
-  width: 100%
-
-.coluna-professores
   display: flex
   flex-direction: column
+  gap: 10px
 
 input[type="checkbox"]
-  margin-right: 5px
+  margin-right: 10px
+  color: #2a3d73 // Azul suave no texto do checkbox
 
 .fechar-modal
   margin-top: 20px
-  padding: 10px 20px
-  background-color: #007bff
-  color: white
+  padding: 10px 20px // Cinza suave para fechar
   border: none
   border-radius: 5px
   cursor: pointer
-
   &:hover
-    background-color: #0056b3
+    transform: scale(1.05)
+    background-color: #10f448
+
+.titulo
+  color: #2a3d73
+  font-weight: bold
+  text-align: center
+  font-size: 24px
+  margin-bottom: 20px
+    
 </style>
+

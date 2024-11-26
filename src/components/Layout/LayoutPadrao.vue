@@ -33,6 +33,18 @@
       </v-btn>
     </router-link>
 
+    <router-link to="/salas" class="router-link">
+      <v-btn @click="retornaInicio" class="botao_inicio">
+          Salas
+      </v-btn>
+    </router-link>
+
+    <router-link to="/calendario" class="router-link">
+      <v-btn @click="retornaInicio" class="botao_inicio">
+          Calendario
+      </v-btn>
+    </router-link>
+
     <v-spacer></v-spacer>
   </v-toolbar>
 </template>
@@ -92,6 +104,7 @@
   text-shadow: 0px 1px 5px rgba(255,255,255,1 )
 
 .router-link
+  margin-left: 5px  
   text-decoration: none
   color: white
   
