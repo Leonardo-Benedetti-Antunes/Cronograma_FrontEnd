@@ -1,6 +1,7 @@
 <template>
+  <!-- container do formulario -->
   <div class="square">
-    <!-- Seção da Tabela de Professores por Dia da Semana -->
+    <!-- Tabela que exibe a tabela do dia da semana -->
     <div class="tabela-professores">
       <h3>Calendário de {{ diaAtual }}</h3>
       <table>
@@ -18,9 +19,9 @@
         </tbody>
       </table>
     </div>
-
+    <!-- container que alinha as listas professor, Curso/materia, Salas/quantidade maxima -->
     <div class="listas">
-      <!-- Lista de Professores -->
+      <!-- lista professor -->
       <div class="lista">
         <h3>Professores</h3>
         <ul class="custom" v-if="professores.length > 0">
@@ -30,8 +31,7 @@
         </ul>
         <p class="custom" v-else>Nenhum professor encontrado.</p>
       </div>
-
-      <!-- Lista de Cursos e suas respectivas matérias -->
+      <!-- lista Curso/Materia -->
       <div class="lista">
         <h3>Cursos</h3>
         <ul class="custom" v-if="cursos.length > 0">
@@ -47,8 +47,7 @@
         </ul>
         <p class="custom" v-else>Nenhum curso encontrado.</p>
       </div>
-
-      <!-- Lista de Salas -->
+      <!-- lista Salas -->
       <div class="lista">
         <h3>Salas</h3>
         <ul class="custom" v-if="salas.length > 0">
@@ -65,14 +64,12 @@
 <script setup>
 import { listarProfessores, listarMaterias, listarSalas, listarCursos, listarMateriaCurso } from '@/API/service.js';
 import { ref, onMounted } from 'vue';
-
-// Variáveis reativas para armazenar os dados
+// variaveis para armazenamento de dados
 const professores = ref([]);
 const cursos = ref([]);
 const materias = ref([]);
 const salas = ref([]);
-
-// Função para carregar os professores
+// funcao que lista os professores
 const carregarProfessores = async () => {
   try {
     const response = await listarProfessores();
@@ -81,8 +78,7 @@ const carregarProfessores = async () => {
     console.error('Erro ao carregar professores:', error);
   }
 };
-
-// Função para carregar as matérias
+// funcao que lista as materias
 const carregarMateria = async () => {
   try {
     const response = await listarMaterias();
@@ -91,8 +87,7 @@ const carregarMateria = async () => {
     console.error('Erro ao carregar matérias:', error);
   }
 };
-
-// Função para carregar os cursos e suas respectivas matérias
+// funcao que lista os Cursos
 const carregarCursos = async () => {
   try {
     const cursosData = await listarCursos();
@@ -105,8 +100,7 @@ const carregarCursos = async () => {
     console.error('Erro ao carregar cursos e matérias:', error);
   }
 };
-
-// Função para carregar as salas
+//funcao que lista as Salas
 const carregarSalas = async () => {
   try {
     const response = await listarSalas();
@@ -115,8 +109,7 @@ const carregarSalas = async () => {
     console.error('Erro ao carregar salas:', error);
   }
 };
-
-// Chama todas as funções de carregamento quando o componente for montado
+//funcao que carrega todas funcoes
 onMounted(() => {
   carregarProfessores();
   carregarCursos();
@@ -203,7 +196,5 @@ ul
   border-radius: 8px
   padding: 20px
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
-  margin-bottom: 20px /* Espaçamento para separar a tabela das colunas */
-
-
+  margin-bottom: 20px
 </style>
