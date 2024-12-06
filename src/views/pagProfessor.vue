@@ -1,18 +1,16 @@
 <template>
+  <!-- container do formulario -->
   <div class="square">
     <h2 class="titulo">Cadastro de Professores</h2>
-
-       <!-- Mensagem de sucesso ou erro após salvar os dados -->
+    <!-- mensagens de erro -->
     <div v-if="showSuccessMessage" class="mensagem-sucesso">
       Dados salvos com sucesso!
     </div>
     <div v-if="showErrorMessage" class="mensagem-erro">
       Ocorreu um erro ao salvar os dados. Tente novamente!
     </div>
-
-
+    <!-- segundo container formulario -->
     <div class="container-formulario">
-      <!-- Campo Nome e Matéria, alinhados horizontalmente -->
       <div class="linha">
         <div class="item-input">
           <label for="name" class="campo-label">Nome:</label>
@@ -27,25 +25,8 @@
             :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
           ></v-text-field>
         </div>
-
-        <!-- <div class="item-input">
-          <label for="materia" class="campo-label">Selecione a Matéria:</label>
-          <v-select
-            id="materia"
-            multiple
-            v-model="materia"
-            :items="['Nenhum','1']"
-            outlined
-            class="campo-input"
-            :error-messages="materiaErrorMessages"
-            @blur="validateMateria"
-            :placeholder="'Selecione a matéria'"
-            :style="{ backgroundColor: inputBgColor, color: inputTextColor }"
-          ></v-select>
-        </div> -->
       </div>
 
-      <!-- Campo Descrição -->
       <div class="item-input">
         <label for="descricao" class="campo-label">Descrição:</label>
         <v-textarea
@@ -59,7 +40,6 @@
         ></v-textarea>
       </div>
 
-      <!-- Selecione os Dias da Semana -->
       <label class="campo-label">Selecione os Dias da Semana:</label>
       <v-alert
         v-if="selectedDaysErrorMessage.length > 0"
@@ -82,7 +62,6 @@
         ></v-checkbox>
       </div>
 
-      <!-- Botões Cancelar e Salvar -->
       <div class="botoes">
         <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
       </div>
@@ -97,35 +76,29 @@ import { ref } from 'vue';
 
 export default {
   setup() {
-    // Variáveis reativas
     const showSuccessMessage = ref(false);
-    const showErrorMessage = ref(''); // Inicializando como string vazia
-    // Variáveis reativas
+    const showErrorMessage = ref('');
     const name = ref('');
     const descricao = ref('');
     const dias = ref([
-      { sigla: 'Dom', id: 1, nome: 'domingo' },  // Domingo = id 1
-      { sigla: 'Seg', id: 2, nome: 'segunda' },  // Segunda-feira = id 2
-      { sigla: 'Ter', id: 3, nome: 'terça' },    // Terça-feira = id 3
-      { sigla: 'Qua', id: 4, nome: 'quarta' },   // Quarta-feira = id 4
-      { sigla: 'Qui', id: 5, nome: 'quinta' },   // Quinta-feira = id 5
-      { sigla: 'Sex', id: 6, nome: 'sexta' },    // Sexta-feira = id 6
-      { sigla: 'Sab', id: 7, nome: 'sábado' },   // Sábado = id 7
+      { sigla: 'Dom', id: 1, nome: 'domingo' },
+      { sigla: 'Seg', id: 2, nome: 'segunda' },
+      { sigla: 'Ter', id: 3, nome: 'terça' },
+      { sigla: 'Qua', id: 4, nome: 'quarta' },
+      { sigla: 'Qui', id: 5, nome: 'quinta' },
+      { sigla: 'Sex', id: 6, nome: 'sexta' },
+      { sigla: 'Sab', id: 7, nome: 'sábado' },
     ]);
     const selectedDays = ref([]);
-
-    // Mensagens de erro
     const nameErrorMessages = ref([]);
     const selectedDaysErrorMessage = ref('');
     const cancelDialog = ref(false);
 
-    // Cores dos campos
     const inputBgColor = ref('#fafafa');
     const inputTextColor = ref('#2a3d73');
     const checkboxBgColor = ref('transparent');
     const checkboxTextColor = ref('#2a3d73');
 
-    // Validação dos campos
     const validateName = () => {
       nameErrorMessages.value = [];
       if (!name.value) {
@@ -140,7 +113,6 @@ export default {
       }
     };
 
-    // Função para identificar os dias selecionados e mapear para booleanos
     const mapSelectedDaysToBooleans = () => {
       const selectedDaysBooleans = {
         domingo: false,
@@ -180,22 +152,19 @@ export default {
       } catch (error) {
         console.error('Erro ao cadastrar professor:', error);
         
-        // Verificando se o erro tem uma mensagem específica
         if (error.response && error.response.data && error.response.data.message) {
           showErrorMessage.value = error.response.data.message;
         } else {
-          // Mensagem de erro genérica
           showErrorMessage.value = 'Erro desconhecido ao cadastrar o professor.';
         }
 
-        showSuccessMessage.value = false; // Esconde a mensagem de sucesso
+        showSuccessMessage.value = false;
         setTimeout(() => {
-          showErrorMessage.value = '';  // Limpa a mensagem de erro após 3 segundos
+          showErrorMessage.value = '';
         }, 3000);
       }
     };
 
-     // Função para salvar todos os dados
     const saveData = async () => {
       validateName();
       validateSelectedDays();
@@ -211,7 +180,6 @@ export default {
       }
     };
 
-
     return {
       name,
       descricao,
@@ -220,7 +188,7 @@ export default {
       nameErrorMessages,
       selectedDaysErrorMessage,
       showSuccessMessage,
-      showErrorMessage, // Agora retornando a mensagem de erro
+      showErrorMessage,
       cancelDialog,
       inputBgColor,
       inputTextColor,
@@ -233,10 +201,6 @@ export default {
   },
 };
 </script>
-
-
-
-
 
 <style scoped lang="sass">
 .square
@@ -318,7 +282,6 @@ export default {
     border-radius: 5px
     padding: 10px
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)
-  
 
   .mensagem-erro 
     margin-top: 20px
@@ -329,7 +292,7 @@ export default {
     border-radius: 5px
     padding: 10px
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)
-  
+
   .campo-label
     color: #2a3d73
     font-size: 14px

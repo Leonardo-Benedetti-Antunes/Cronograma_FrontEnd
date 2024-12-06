@@ -2,17 +2,11 @@
   <div class="quadrado">
     <h2 class="titulo">Cadastro de Sala</h2>
 
-    <!-- Mensagem de sucesso ou erro após salvar os dados -->
     <div v-if="showSuccessMessage" class="mensagem-sucesso">
       Dados salvos com sucesso!
     </div>
     <div v-if="showErrorMessage" class="mensagem-erro">
       Ocorreu um erro ao salvar os dados. Tente novamente!
-    </div>
-
-    <!-- Mensagem de erro -->
-    <div v-if="showErrorMessage" class="mensagem-erro">
-      {{ showErrorMessage }}
     </div>
 
     <div class="container-formulario">
@@ -45,24 +39,9 @@
         ></v-text-field>
       </div>
 
-      <!-- Botões -->
       <div class="botoes">
-        <v-btn @click="confirmCancel" class="botao-acao-cancelar">Cancelar</v-btn>
         <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
       </div>
-
-      <!-- Diálogo de Confirmação de Cancelamento -->
-      <v-dialog v-model="cancelDialog" max-width="290">
-        <v-card>
-          <v-card-title class="headline">Confirmar Cancelamento</v-card-title>
-          <v-card-text>Tem certeza de que deseja cancelar o cadastro?</v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn color="green" text @click="cancel">Sim</v-btn>
-            <v-btn color="red" text @click="cancelDialog = false">Não</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </div>
   </div>
 </template>
@@ -73,18 +52,15 @@ import { ref } from 'vue';
 
 export default {
   setup() {
-    // Variáveis reativas
     const showSuccessMessage = ref(false);
     const showErrorMessage = ref('');
     const name = ref('');
     const quantidade = ref('');
-    
-    // Mensagens de erro
+
     const nameErrorMessages = ref([]);
     const quantidadeErrorMessages = ref([]);
     const cancelDialog = ref(false);
 
-    // Funções de validação
     const validateName = () => {
       nameErrorMessages.value = [];
       if (!name.value) {
@@ -99,59 +75,46 @@ export default {
       }
     };
 
-    // Função para cadastrar a sala
     const cadastrarSala = async () => {
       try {
         const salaData = {
           nome: name.value,
           quantidadeMaxima: quantidade.value,
         };
-
-        await criarSala(salaData);  // Enviar para a API
+        await criarSala(salaData);
         showSuccessMessage.value = true;
-        showErrorMessage.value = ''; // Limpar mensagem de erro
-
-        // Limpar campos após sucesso
+        showErrorMessage.value = '';
         name.value = '';
         quantidade.value = '';
-
         setTimeout(() => {
           showSuccessMessage.value = false;
         }, 3000);
       } catch (error) {
         console.error('Erro ao cadastrar sala:', error);
-        
-        // Verificando se o erro tem uma mensagem específica
         if (error.response && error.response.data && error.response.data.message) {
           showErrorMessage.value = error.response.data.message;
         } else {
-          // Mensagem de erro genérica
-          showErrorMessage.value = 'Erro desconhecido ao cadastrar a sala.';
+          showErrorMessage.value = 'Ocorreu um erro ao salvar os dados. Tente novamente!.';
         }
-
-        showSuccessMessage.value = false; // Esconde a mensagem de sucesso
+        showSuccessMessage.value = false;
         setTimeout(() => {
-          showErrorMessage.value = '';  // Limpa a mensagem de erro após 3 segundos
+          showErrorMessage.value = '';
         }, 3000);
       }
     };
 
-    // Função para salvar os dados
     const saveData = async () => {
       validateName();
       validateQuantidade();
-
       if (nameErrorMessages.value.length === 0 && quantidadeErrorMessages.value.length === 0) {
-        await cadastrarSala();  // Chama a função para cadastrar a sala
+        await cadastrarSala();
       }
     };
 
-    // Função para confirmar cancelamento
     const confirmCancel = () => {
       cancelDialog.value = true;
     };
 
-    // Função para cancelar
     const cancel = () => {
       name.value = '';
       quantidade.value = '';
@@ -177,7 +140,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped lang="sass">
 .quadrado 
@@ -250,7 +212,6 @@ export default {
     background-color: #10f448
     text-shadow: 0px 1px 5px rgba(255,255,255,1 )
 
-
 .mensagem-sucesso 
   margin-top: 20px
   color: green
@@ -260,7 +221,6 @@ export default {
   border-radius: 5px
   padding: 10px
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)
-  
 
 .mensagem-erro 
   margin-top: 20px
@@ -271,6 +231,7 @@ export default {
   border-radius: 5px
   padding: 10px
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)
+
 .campo-label
   color: #2a3d73
   font-size: 14px

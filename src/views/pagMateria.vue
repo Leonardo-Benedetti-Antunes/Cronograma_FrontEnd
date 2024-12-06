@@ -1,22 +1,16 @@
 <template>
   <div class="quadrado">
-    <!-- Título da tela de cadastro de matéria -->
     <h2 class="titulo">Cadastro de Matéria</h2>
 
-    <!-- Mensagem de sucesso que aparece após salvar os dados -->
     <div v-if="showSuccessMessage" class="mensagem-sucesso">
       Dados salvos com sucesso!
     </div>
 
-    <!-- Mensagem de erro caso ocorra algum problema -->
     <div v-if="showErrorMessage" class="mensagem-erro">
-      {{ showErrorMessage }}
+      Ocorreu um erro ao salvar os dados. Tente novamente!
     </div>
 
-    <!-- Container do formulário -->
     <div class="container-formulario">
-
-      <!-- Campo de nome da matéria -->
       <div class="linha">
         <div class="item-input">
           <label for="name" class="campo-label">Nome da Matéria:</label>
@@ -33,7 +27,6 @@
         </div>
       </div>
 
-      <!-- Campo de seleção dos cursos -->
       <div class="linha">
         <div class="item-input">
           <label for="curso" class="campo-label">Selecione os cursos:</label>
@@ -42,7 +35,7 @@
             v-model="selectedCursos"
             multiple
             :items="cursos"
-            item-text="nome"
+            item-title="nome"
             item-value="id"
             outlined
             class="campo-input"
@@ -52,7 +45,6 @@
         </div>
       </div>
 
-      <!-- Botões de ação: Salvar e Cancelar -->
       <div class="botoes">
         <v-btn @click="saveData" class="botao-acao-salvar">Salvar</v-btn>
       </div>
@@ -61,60 +53,50 @@
 </template>
 
 <script setup>
-import { criarMateria, inserirMateriaCurso, listarCursos, listarMateriaCurso } from '@/API/service';  // Funções de API para criar a matéria e associá-la ao curso
+import { criarMateria, inserirMateriaCurso, listarCursos, listarMateriaCurso } from '@/API/service';
 import { ref, onMounted } from 'vue';
 
-/* Variáveis e referências de estado para os campos de entrada */
-const inputBgColor = ref('#fafafa') // Cor de fundo dos campos de entrada
-const inputTextColor = ref('#2a3d73') // Cor do texto nos campos
+const inputBgColor = ref('#fafafa');
+const inputTextColor = ref('#2a3d73');
 
-/* Variáveis para armazenar os dados do formulário */
-const name = ref('')
-const showSuccessMessage = ref(false)
-const showErrorMessage = ref('')
+const name = ref('');
+const showSuccessMessage = ref(false);
+const showErrorMessage = ref('');
 
-/* Mensagens de erro para cada campo */
-const nameErrorMessages = ref([])
+const nameErrorMessages = ref([]);
 
-/* Lista de cursos disponíveis para seleção */
-const cursos = ref([])  // Armazena os cursos retornados da API
-const selectedCursos = ref([])  // Cursos selecionados pelo usuário
+const cursos = ref([]);
+const selectedCursos = ref([]);
 
-// Função para carregar os cursos e suas respectivas matérias ao montar o componente
 const carregarCursos = async () => {
   try {
-    const cursosData = await listarCursos();  // Carrega os cursos
+    const cursosData = await listarCursos();
     for (let curso of cursosData) {
-      const materiasCurso = await listarMateriaCurso(curso.id);  // Carrega as matérias de cada curso
-      curso.materias = materiasCurso;  // Associa as matérias ao curso
+      const materiasCurso = await listarMateriaCurso(curso.id);
+      curso.materias = materiasCurso;
     }
-    cursos.value = cursosData;  // Atualiza a lista de cursos no Vue
+    cursos.value = cursosData;
   } catch (error) {
     console.error('Erro ao carregar cursos e matérias:', error);
   }
 };
 
-// Carregar os cursos ao montar o componente
 onMounted(() => {
   carregarCursos();
 });
 
-/* Função para validar o campo de nome */
 const validateName = () => {
-  nameErrorMessages.value = []  // Limpa as mensagens de erro
-  if (!name.value) {  // Se o campo nome estiver vazio, exibe erro
-    nameErrorMessages.value.push('O nome da matéria é obrigatório.')
+  nameErrorMessages.value = [];
+  if (!name.value) {
+    nameErrorMessages.value.push('O nome da matéria é obrigatório.');
   }
-}
+};
 
-/* Função para salvar os dados do formulário */
 const saveData = async () => {
-  // Executa as validações
-  validateName()
+  validateName();
 
-  // Se houver erros, não prossegue com o salvamento
   if (nameErrorMessages.value.length > 0) {
-    return
+    return;
   }
 
   if (selectedCursos.value.length === 0) {
@@ -123,56 +105,43 @@ const saveData = async () => {
   }
 
   try {
-    // Preparando os dados para enviar à API
-    const materiaData = {
-      nome: name.value
-    }
+    const materiaData = { nome: name.value };
+    const materiaResponse = await criarMateria(materiaData);
 
-    // Envia os dados para a API para criar a matéria
-    const materiaResponse = await criarMateria(materiaData)
-
-    // Se a matéria foi criada com sucesso, associa aos cursos selecionados
     if (materiaResponse && materiaResponse.id) {
-      // Para cada curso selecionado, associa a matéria ao curso
       for (const cursoId of selectedCursos.value) {
-        await inserirMateriaCurso(cursoId, materiaResponse.id)
+        try {
+          await axios.post(`http://localhost:8080/curso/${cursoId}/materia/${materiaResponse.id}`);
+        } catch (error) {
+          console.error(`Erro ao associar a matéria ao curso ${cursoId}:`, error);
+        }
       }
 
-      // Exibe mensagem de sucesso
-      showSuccessMessage.value = true
-      showErrorMessage.value = ''
+      showSuccessMessage.value = true;
+      showErrorMessage.value = '';
 
-      // Limpa os campos após o sucesso
-      name.value = ''
-      selectedCursos.value = []
+      name.value = '';
+      selectedCursos.value = [];
 
-      // Fechar a mensagem de sucesso após 3 segundos
       setTimeout(() => {
-        showSuccessMessage.value = false
-      }, 3000)
+        showSuccessMessage.value = false;
+      }, 3000);
     } else {
-      // Se a resposta não foi adequada, exibe erro
-      showErrorMessage.value = 'Erro ao salvar a matéria. Tente novamente.'
+      showErrorMessage.value = 'Erro ao salvar a matéria. Tente novamente.';
     }
-
   } catch (error) {
-    console.error('Erro ao cadastrar matéria:', error)
+    console.error('Erro ao cadastrar matéria:', error);
+    showErrorMessage.value = 'Erro ao salvar a matéria. Tente novamente.';
+    showSuccessMessage.value = false;
 
-    // Exibe a mensagem de erro caso a API falhe
-    showErrorMessage.value = 'Erro ao salvar a matéria. Tente novamente.'
-    showSuccessMessage.value = false
-
-    // Limpa a mensagem de erro após 3 segundos
     setTimeout(() => {
-      showErrorMessage.value = ''
-    }, 3000)
+      showErrorMessage.value = '';
+    }, 3000);
   }
-}
+};
 </script>
 
-
 <style scoped lang="sass">
-/* Estilos para o layout geral da tela de cadastro */
 .quadrado 
   display: flex
   flex-direction: column
@@ -188,7 +157,6 @@ const saveData = async () => {
   position: relative
   border-radius: 6px
 
-/* Estilo para o título principal */
 .titulo
   color: #2a3d73
   font-weight: bold
@@ -196,7 +164,6 @@ const saveData = async () => {
   font-size: 24px
   margin-bottom: 20px
 
-/* Container para o formulário com espaçamento entre os elementos */
 .container-formulario
   display: flex
   flex-direction: column
@@ -205,7 +172,6 @@ const saveData = async () => {
   padding: 20px
   box-sizing: border-box
 
-/* Estilo para as linhas de inputs */
 .linha
   display: flex
   gap: 20px
@@ -213,12 +179,10 @@ const saveData = async () => {
   align-items: center
   flex-wrap: wrap
 
-/* Estilo para cada item de input */
 .item-input
   flex: 1
   min-width: 250px
 
-/* Estilo para os campos de input */
 .campo-input
   width: 100%
   font-size: 14px
@@ -228,43 +192,47 @@ const saveData = async () => {
   background-color: #fafafa
   color: #2a3d73
 
-/* Estilo para os botões de ação */
 .botoes
   display: flex
   justify-content: flex-end
   gap: 10px
   margin-top: 20px
 
-/* Estilo de hover para o botão Salvar */
 .botao-acao-salvar
   transition: background-color 0.3s ease, transform 0.2s ease
   &:hover
     transform: scale(1.05)
     background-color: #10f448
-/* Estilo para a mensagem de sucesso */
-.mensagem-sucesso
+
+.mensagem-sucesso 
   margin-top: 20px
-  color: green
+  color: white
   font-weight: bold
   text-align: center
-  background: rgba(255, 255, 255, 0.9)
+  background: #10f448
   border-radius: 5px
   padding: 10px
-  box-shadow: 0 0 10px rgba(0,0,0,0.2)
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)
 
-/* Estilo para os rótulos dos campos */
+.mensagem-erro 
+  margin-top: 20px
+  color: white
+  font-weight: bold
+  text-align: center
+  background: #991418
+  border-radius: 5px
+  padding: 10px
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)
+
 .campo-label
   color: #2a3d73
   font-size: 14px
   font-weight: 400
 
-/* Estilo global para body e html */
 body, html
   height: 100%
   margin: 0
 
-
 .checkbox-item 
   margin: 5px 0
-
 </style>
