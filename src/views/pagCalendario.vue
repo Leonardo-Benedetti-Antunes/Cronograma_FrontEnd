@@ -1,149 +1,201 @@
 <template>
   <div class="quadrado">
     <h2 class="titulo">Calendário</h2>
-
-    <!-- Contêiner para os dias da semana -->
-    <div class="dias-semana">
-      <div v-for="(dia, index) in ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']" :key="index" class="dia-coluna">
-        <!-- Botões para selecionar o dia -->
-        <v-btn @click="abrirTabela(dia)" class="botao-dia">
-          {{ dia }}
-        </v-btn>
-      </div>
-      <router-link to="/calendario-Visualizacao" class="router-link">
-        <v-btn @click="visualizar" class="botao-vizualizar">
-          Visualizar Cronograma
-        </v-btn>
-      </router-link>
-    </div>
-
-    <!-- Exibição da tabela de professores -->
-    <div class="tabela-professores">
-      <div v-if="selectedDia" class="conteudo-tabela">
-        <div class="titulo-tabela">
-          <h3 class="h3Titulo">Professores de {{ selectedDia }}</h3>
-          <!-- Botão para adicionar professor -->
-          <v-btn @click="abrirModal(selectedDia)" class="botao-add-professor">
-            Adicionar Professor
+    <v-column class="container">
+      <div class="dias-semana">
+        <div
+          v-for="(dia, index) in ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta']"
+          :key="index"
+          class="dia-coluna"
+        >
+          <v-btn
+            @click="abrirTabela(dia)"
+            :class="{ 'botao-dia-selecionado': diaSelecionado === dia }"
+            class="botao-dia"
+          >
+            {{ dia }}
           </v-btn>
         </div>
-
-        <div class="lista-professores-selecionados">
-          <div v-for="(professor, idx) in selectedProfessores[selectedDia]" :key="idx" class="professor-item">
-            <span>{{ professor }}</span>
-            <v-btn class="remover-professor" @click="removerProfessor(selectedDia, professor.id, idx)">Remover</v-btn>
-          </div>
-        </div>
-        
-        <!-- Botões de salvar e cancelar -->
-        <div class="acoes-tabela">
-          <v-btn @click="cancelar" class="botao-cancelar">Cancelar</v-btn>
-          <v-btn @click="salvar" class="botao-salvar">Salvar</v-btn>
-        </div>
       </div>
+    </v-column>
+
+    <v-col cols="12" class="titulo">
+      <h1>Cronograma - {{ diaSelecionado }}</h1>
+    </v-col>
+    <div class="lista-professores-selecionados">
+      <v-container>
+        <v-row class="modal">
+          <v-col cols="12" md="6">
+            <v-card-title class="titulo">{{ diaSelecionado }}</v-card-title>
+            <v-card-text>
+              <v-list>
+                <v-list-item
+                  v-for="professor in cronograma[diaSelecionado.toLowerCase()]"
+                  :key="professor.id"
+                  class="professor-item"
+                >
+                  <v-column>
+                    <v-list-item-content>
+                      Professor: {{ professor.nome }}
+                    </v-list-item-content>
+                    <v-list-item-content>
+                      <span v-if="professor.sala">Sala: {{ professor.sala }}</span>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-btn
+                        @click="abrirModalSala(professor, diaSelecionado)"
+                        small
+                        color="primary"
+                      >
+                        Adicionar Sala
+                      </v-btn>
+                    </v-list-item-action>
+                  </v-column>
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+          </v-col>
+        </v-row>
+      </v-container>
     </div>
 
-    <!-- Modal de seleção de professores -->
-    <div v-if="modalAberto" class="modal-overlay">
-      <div class="modal">
-        <h2>Selecione os Professores para {{ selectedDia }}</h2>
-        <div class="lista-professores-checkbox">
-          <div v-for="(professor, idx) in professoresDisponiveis" :key="idx">
-            <input
-              type="checkbox"
-              :id="professor.nome + selectedDia"
-              :value="professor"
-              v-model="selectedProfessores[selectedDia]"
-            />
-            <label :for="professor.nome + selectedDia">{{ professor.nome }}</label>
-          </div>
-        </div>
-        <v-btn class="fechar-modal" @click="fecharModal">Salvar e Fechar</v-btn>
-      </div>
-    </div>
+    <v-dialog v-model="modalSalaAberto" max-width="500">
+      <v-card>
+        <v-card-title>
+          Adicionar Sala para {{ professorSelecionado?.nome || "" }}
+        </v-card-title>
+        <v-card-text>
+          <v-select
+            v-model="salaSelecionada"
+            :items="salasDisponiveis"
+            label="Selecione a sala"
+            item-text="nome"
+            item-value="id"
+            outlined
+            required
+          ></v-select>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn @click="fecharModalSala" text>Cancelar</v-btn>
+          <v-btn @click="adicionarSala" color="primary" text>Salvar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { listarProfessores, removerDiaDoProfessor } from '@/API/service'
+import { ref, onMounted } from "vue";
+import axios from "axios";
 
-// Estado para armazenar a lista de professores e controlar o carregamento
-const professores = ref([])
+const cronograma = ref({
+  segunda: [],
+  terca: [],
+  quarta: [],
+  quinta: [],
+  sexta: [],
+});
 
-// Carregar professores ao montar o componente
+const salasDisponiveis = ref([]);
+const modalSalaAberto = ref(false);
+const professorSelecionado = ref(null);
+const diaSelecionado = ref("Segunda"); // Inicializa com "Segunda"
+const salaSelecionada = ref("");
+
 const carregarProfessores = async () => {
   try {
-    professores.value = await listarProfessores()
+    const response = await axios.get("http://localhost:8080/professor");
+    console.log("Dados recebidos da API:", response.data);
+    const professores = response.data;
+
+    const cronogramaTemp = {
+      segunda: [],
+      terca: [],
+      quarta: [],
+      quinta: [],
+      sexta: [],
+    };
+
+    const professoresAlocados = new Set();
+
+    // Lista de dias para alocação
+    const dias = ["segunda", "terca", "quarta", "quinta", "sexta"];
+
+    // Ordena os dias pelo número atual de professores alocados
+    const alocarEmDiaMenosLotado = () => {
+      const diasOrdenados = dias.sort(
+        (a, b) => cronogramaTemp[a].length - cronogramaTemp[b].length
+      );
+      return diasOrdenados[0];
+    };
+
+    professores.forEach((professor) => {
+      if (!professoresAlocados.has(professor.id)) {
+        const diaMenosLotado = alocarEmDiaMenosLotado();
+        cronogramaTemp[diaMenosLotado].push(professor);
+        professoresAlocados.add(professor.id);
+      }
+    });
+
+    cronograma.value = cronogramaTemp;
   } catch (error) {
-    console.error('Erro ao carregar professores:', error)
+    console.error("Erro ao carregar professores:", error);
   }
-}
+};
+
+const carregarSalas = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/sala");
+    salasDisponiveis.value = response.data;
+  } catch (error) {
+    console.error("Erro ao carregar as salas disponíveis:", error);
+  }
+};
 
 onMounted(() => {
-  carregarProfessores()
-})
+  carregarProfessores();
+  carregarSalas();
+  // Define "Segunda" como o dia inicializado
+  diaSelecionado.value = "Segunda";
+});
 
-// Função para filtrar professores por dia
-const filtrarProfessoresPorDia = (dia) => {
-  return professores.value.filter(prof => prof[dia]) // Considerando que a API retorna boolean para os dias
-}
-
-// Objeto para armazenar os professores selecionados por dia
-const selectedProfessores = ref({
-  'Segunda': [],
-  'Terça': [],
-  'Quarta': [],
-  'Quinta': [],
-  'Sexta': []
-})
-
-// Controla a exibição do modal de seleção de professores
-const modalAberto = ref(false)
-const selectedDia = ref('Segunda') // Definir "Segunda" como o primeiro dia da semana ao carregar
-const professoresDisponiveis = computed(() => filtrarProfessoresPorDia(selectedDia.value))
-
-// Função para abrir a tabela de um dia específico
 const abrirTabela = (dia) => {
-  selectedDia.value = dia
-}
-
-// Função para abrir o modal de seleção de professores
-const abrirModal = (dia) => {
-  selectedDia.value = dia
-  modalAberto.value = true
-}
-
-// Função para fechar o modal
-const fecharModal = () => {
-  modalAberto.value = false
-}
-
-// Função para remover um professor da lista de selecionados
-const removerProfessor = async (dia, idProfessor, index) => {
-  try {
-    await removerDiaDoProfessor(idProfessor, dia)
-    selectedProfessores.value[dia].splice(index, 1)
-  } catch (error) {
-    console.error('Erro ao remover o professor:', error)
+  if (!diaSelecionado.value || diaSelecionado.value !== dia) {
+    diaSelecionado.value = dia;
   }
-}
+};
 
-// Função para salvar as seleções
-const salvar = () => {
-  console.log('Professores salvos:', selectedProfessores.value)
-}
+const abrirModalSala = (professor, dia) => {
+  if (!diaSelecionado.value) {
+    alert("Por favor, selecione um dia primeiro.");
+    return;
+  }
+  professorSelecionado.value = professor;
+  diaSelecionado.value = dia;
+  salaSelecionada.value = professor.sala || "";
+  modalSalaAberto.value = true;
+};
 
-// Função para cancelar a seleção
-const cancelar = () => {
-  selectedProfessores.value[selectedDia.value] = []
-}
+const fecharModalSala = () => {
+  modalSalaAberto.value = false;
+  professorSelecionado.value = null;
+  salaSelecionada.value = "";
+};
+
+const adicionarSala = () => {
+  if (!salaSelecionada.value) {
+    alert("Por favor, selecione uma sala.");
+    return;
+  }
+
+  professorSelecionado.value.sala = salaSelecionada.value;
+
+  fecharModalSala();
+};
 </script>
 
-
-
 <style scoped lang="sass">
-.quadrado 
+.quadrado
   display: flex
   flex-direction: column
   justify-content: center
@@ -154,7 +206,7 @@ const cancelar = () => {
   width: 100%
   height: auto
   background-color: #f0f0f0
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.2)
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2)
   position: relative
   border-radius: 6px
 
@@ -169,8 +221,8 @@ const cancelar = () => {
 
 .botao-dia
   padding: 10px 15px
-  background-color: #d1d1d1 // Cinza suave
-  color: #2a3d73 // Texto azul suave
+  background-color: #d1d1d1
+  color: #2a3d73
   border: none
   border-radius: 5px
   cursor: pointer
@@ -178,132 +230,13 @@ const cancelar = () => {
 .botao-dia:hover
   transform: scale(1.05)
   color: #fafafa
-  background-color: #2a3d73 // Efeito de hover suave em cinza
-  text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
+  background-color: #2a3d73
+  text-shadow: 0px 0px 3px rgba(255, 255, 255, 1)
 
-.tabela-professores
-  width: 100%
-  background-color: #fafafa // Fundo claro para a tabela
-  border-radius: 8px
-  padding: 20px
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
-
-.conteudo-tabela
-  display: flex
-  flex-direction: column
-  align-items: flex-start
-
-.titulo-tabela
-  display: flex
-  justify-content: space-between
-  width: 100%
-
-.botao-add-professor
-  padding: 10px 20px
-  background-color: #1e2e4c // Azul suave para o botão
+.botao-dia-selecionado
+  background-color: #2a3d73
   color: white
-  border: none
-  border-radius: 5px
-  cursor: pointer
-
-.botao-add-professor:hover
-  transform: scale(1.05)
-  background-color: #0e1e3c // Tom mais escuro de azul para hover
-  text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
-
-.lista-professores-selecionados
-  width: 100%
-  margin-top: 20px
-  height: 380px
-  overflow-y: auto
-  border: 1px solid transparentize(#2a3d73, 0.8)
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1)
-
-.professor-item
-  color: black
-  display: flex
-  justify-content: space-between
-  align-items: center
-  padding: 10px
-  background-color: #fafafa // Fundo claro para cada item
-  border-radius: 4px
-  margin-bottom: 5px
-  border: 1px solid #ddd
-
-.remover-professor
-  background: none
-  border: none
-  color: #991418 // Vermelho para o botão de remover
-  font-size: 16px
-  cursor: pointer
-
-.remover-professor:hover
-  color: darkred
-
-.acoes-tabela
-  margin-top: 20px
-  display: flex
-  justify-content: flex-end
-  gap: 10px
-  width: 100%
-
-.botao-salvar
-  transition: background-color 0.3s ease, transform 0.2s ease
-  &:hover
-    transform: scale(1.05)
-    background-color: #10f448
-    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
-
-.botao-cancelar
-  transition: background-color 0.3s ease, transform 0.2s ease
-  &:hover
-    transform: scale(1.05)
-    background-color: #991418
-    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
-
-
-.modal-overlay
-  position: fixed
-  top: 0
-  left: 0
-  width: 100vw
-  height: 100vh
-  background-color: rgba(0, 0, 0, 0.5)
-  display: flex
-  justify-content: center
-  align-items: center
-
-.modal
-  color: #2a3d73
-  background-color: #fff
-  padding: 25px
-  max-width: 80vw
-  max-height: 80vh
-  border-radius: 10px
-  overflow-y: auto
-  display: flex
-  flex-direction: column
-  align-items: center
-
-.lista-professores-checkbox
-  display: flex
-  flex-direction: column
-  gap: 10px
-
-input[type="checkbox"]
-  margin-right: 10px
-  color: #2a3d73 // Azul suave no texto do checkbox
-
-.fechar-modal
-  margin-top: 20px
-  padding: 10px 20px // Cinza suave para fechar
-  border: none
-  border-radius: 5px
-  cursor: pointer
-  &:hover
-    transform: scale(1.05)
-    background-color: #10f448
-    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
+  font-weight: bold
 
 .titulo
   color: #2a3d73
@@ -311,22 +244,50 @@ input[type="checkbox"]
   text-align: center
   font-size: 24px
   margin-bottom: 20px
-    
-.h3Titulo
+
+.lista-professores-selecionados
+  width: 100%
+  margin-top: 20px
+  overflow-y: auto
+  border: 1px solid transparentize(#2a3d73, 0.8)
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1)
+  display: flex
+  flex-direction: column
+
+.v-list
+  background-color: #f0f0f0
+
+.v-list-item
+  background-color: #f0f0f0
+  color: black
+  border: 1px solid #ddd
+  border-radius: 4px
+  margin-bottom: 5px
+  padding: 10px
+
+.professor-item
+  display: flex
+  justify-content: space-between
+  align-items: center
+  padding: 10px
+  background-color: #fafafa
+  border-radius: 4px
+  margin-bottom: 5px
+  border: 1px solid #ddd
+  width: 100%
+  box-sizing: border-box
+
+.modal
   color: #2a3d73
+  background-color: #fff
+  padding: 25px
+  border-radius: 10px
+  overflow-y: auto
+  display: flex
+  flex-direction: column
+  align-items: center
 
-.botao-vizualizar
-  margin-left: 20px
-  padding: 10px 20px
-  background-color: #1e2e4c // Azul suave para o botão
-  color: white
-  border: none
-  border-radius: 5px
-  cursor: pointer
-  &:hover
-    transform: scale(1.05)
-    color: white
-    text-shadow: 0px 0px 3px rgba(255,255 ,255 ,1 )
-    background-color: #1a9afa
+input[type="checkbox"]
+  margin-right: 10px
+  color: #2a3d73
 </style>
-

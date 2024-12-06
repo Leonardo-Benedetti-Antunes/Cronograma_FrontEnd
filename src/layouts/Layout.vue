@@ -35,11 +35,11 @@
       </v-btn>
         </router-link>
 
-        <router-link to="/cadastro-curso" class="router-link">
+        <!-- <router-link to="/cadastro-curso" class="router-link">
           <v-btn @click="curso" class="botao_routers">
             Curso
       </v-btn>
-        </router-link>
+        </router-link> -->
 
         <router-link to="/cadastro-sala" class="router-link">
           <v-btn @click="sala" class="botao_routers">

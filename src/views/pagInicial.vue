@@ -2,8 +2,8 @@
   <div class="square">
     <!-- Seção da Tabela de Professores por Dia da Semana -->
     <div class="tabela-professores">
-      <h3>Calendário de {{ diaAtual }}</h3>
-      <table>
+      <h1>Início</h1>
+      <!-- <table>
         <thead>
           <tr>
             <th>Nome do Professor</th>
@@ -16,7 +16,7 @@
             <td>{{ professor.dias.join(", ") }}</td>
           </tr>
         </tbody>
-      </table>
+      </table> -->
     </div>
 
     <div class="listas">
@@ -185,6 +185,12 @@ body, html
   height: 100%
   margin: 0
 
+h1
+  color: #2a3d73
+  font-size: 24px
+  font-weight: bold
+  text-align: center
+
 h3
   color: #2a3d73
   font-size: 20px
@@ -201,7 +207,7 @@ ul
   width: 100%
   background-color: #fafafa
   border-radius: 8px
-  padding: 20px
+  padding: 10px
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
   margin-bottom: 20px /* Espaçamento para separar a tabela das colunas */
 
